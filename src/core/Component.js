@@ -14,8 +14,7 @@ export default class Component {
       const idx = this._components.map(x => x.name.toUpperCase()).indexOf(c.tagName);
 
       if (idx !== -1) {
-        return this._components[idx].nodeTree;
-        // return this._components[idx].renderFnc(h);
+        return this._components[idx]._nodeTree;
       }
 
       return c;
@@ -31,33 +30,31 @@ export default class Component {
   
 
   updateDom = state => {
-    let tree = this.renderFnc((a, b, c) => {
+    let tree = this._renderFnc((a, b, c) => {
       if (typeof a === 'string') {
         return h(a, b, c)
       } else if (typeof a === 'object') {
         const cmp = this._components.find(c => c.name === a.name)
 
         if (cmp) {
-          return cmp.nodeTree
+          return cmp._nodeTree
         }
 
         return h('span', {}, [])
       }
     });
 
-    tree.children = this.traverseChildren(tree);
+    // tree.children = this.traverseChildren(tree);
 
-    const patches = diff(this.nodeTree, tree);
-  
-    this.nodeTree = tree;
-    // this.rootNode = patch(this.rootNode, patches);
+    const patches = diff(this._nodeTree, tree);
+    this._nodeTree = tree;
     this.renderCallback(patches)
   }
 
   constructor (component, renderCallback, parent) {
     this.name = component.name;
     this.renderCallback = renderCallback;
-    this.state = Observable({
+    this._state = Observable({
       target: component.state(),
       listener: this.updateDom,
       freeze: false
@@ -65,13 +62,13 @@ export default class Component {
 
     this._parent = parent;
 
-    for (let key in this.state) {
+    for (let key in this._state) {
       Object.defineProperty(this, key, {
         get () {
-          return this.state[key]
+          return this._state[key]
         },
         set (newVal) {
-          this.state[key] = newVal
+          this._state[key] = newVal
         },
         configurable: true
       })
@@ -82,28 +79,20 @@ export default class Component {
     }
 
     this._components = [];
-    this.renderFnc = component.render;
-    this.nodeTree = this.renderFnc((a, b, c) => {
+    this._renderFnc = component.render;
+    this._nodeTree = this._renderFnc((a, b, c) => {
       if (typeof a === 'string') {
         return h(a, b,c )
       } else if (typeof a === 'object') {
         const c = this.initializeChildComponent(a.name || String(this._components.length), a);
         this._components.push(c);
-        return c.renderFnc(h)
+        return c._renderFnc(h)
       }
     });
 
     if (this.isRootComponent) {
-      this.renderCallback(this.nodeTree)
+      this.renderCallback(this._nodeTree)
       this.updateDom()
     }
-    
-    // for (let key in component.components) {
-    //   this._components.push(this.initializeChildComponent(key, component.components[key]))
-    // }
-
-    
-    // this.rootNode = create(this.nodeTree);
-    // document.body.appendChild(this.rootNode);
   }
 }

@@ -6,9 +6,9 @@ module.exports = {
   output: {
     path: path.join(__dirname, 'dist'),
     filename: "bundle.js",
-    library: 'epoxy',
-    libraryTarget: 'umd',
-    filename: 'epoxy.js',
+    // library: 'epoxy',
+    // libraryTarget: 'umd',
+    // filename: 'epoxy.js',
   },
   module: {
     rules: [
