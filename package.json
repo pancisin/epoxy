@@ -5,7 +5,7 @@
     "main": "index.js",
     "scripts": {
         "serve": "webpack-dev-server",
-        "build": "webpack",
+        "build": "webpack ./src/build.js --env prod",
         "predeploy": "npm run build",
         "deploy": "npm publish"
     },

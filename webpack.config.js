@@ -1,9 +1,14 @@
+const path = require('path')
+
 module.exports = {
   entry: "./src/main.js",
   mode: 'development',
   output: {
-    path: __dirname,
-    filename: "bundle.js"
+    path: path.join(__dirname, 'dist'),
+    filename: "bundle.js",
+    library: 'epoxy',
+    libraryTarget: 'umd',
+    filename: 'epoxy.js',
   },
   module: {
     rules: [
