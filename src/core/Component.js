@@ -9,18 +9,6 @@ export default class Component {
     return this._parent == null;
   }
 
-  traverseChildren = tree => {
-    return tree.children.map(c => {
-      const idx = this._components.map(x => x.name.toUpperCase()).indexOf(c.tagName);
-
-      if (idx !== -1) {
-        return this._components[idx]._nodeTree;
-      }
-
-      return c;
-    })
-  }
-
   initializeChildComponent = (name, comp) => new Component({
     ...comp,
     name
@@ -43,8 +31,6 @@ export default class Component {
         return h('span', {}, [])
       }
     });
-
-    // tree.children = this.traverseChildren(tree);
 
     const patches = diff(this._nodeTree, tree);
     this._nodeTree = tree;
