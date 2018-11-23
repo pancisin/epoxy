@@ -10,11 +10,11 @@ export default class Component {
     return this._parent == null;
   }
 
-  initializeChildComponent = comp => new Component(comp, patches => {
-    this.updateDom(true);
+  _initializeChildComponent = comp => new Component(comp, patches => {
+    this._updateDom(true);
   }, this)
   
-  updateDom = partial => {
+  _updateDom = partial => {
     let tree = this._nodeTree;
 
     tree = this._renderFnc((a, b, c) => {
@@ -39,45 +39,24 @@ export default class Component {
     const patches = diff(this._nodeTree, tree);
     this._nodeTree = tree;
     this.$el = create(this._nodeTree);
-    this.renderCallback(patches);
+    this._renderCallback(patches);
   }
 
   constructor (component, renderCallback, parent) {
     this.name = component.name;
-    this.renderCallback = renderCallback;
+    this._renderCallback = renderCallback;
     this._parent = parent;
     
     this._hash = stringHash(JSON.stringify(component))
    
     if (component.state) {
-      this._state = Observable({
-        target: component.state(),
-        listener: _ => {
-          this.updateDom();
-        },
-        freeze: false
-      });
+      this._state = this._introduceMembers(component.state())
     }
-
-    for (let key in this._state) {
-      Object.defineProperty(this, key, {
-        get () {
-          return this._state[key]
-        },
-        set (newVal) {
-          this._state[key] = newVal
-        },
-        configurable: true
-      })
-    }
-    
-    // this._props = component.props && this.setProps(component.props)
 
     if (component.init) {
       component.init.apply(this)
     }
 
-    this._components = [];
     this._renderFnc = component.render;
 
     const componentsToInit = []
@@ -90,37 +69,43 @@ export default class Component {
       }
     });
 
-    this.renderCallback(this._nodeTree)
+    this._renderCallback(this._nodeTree)
     
+    this._components = [];
     this._components = componentsToInit.map(data => {
-      const comp = this.initializeChildComponent(data.component);
-      comp.setProps(data.props)
+      const comp = this._initializeChildComponent(data.component);
+      comp._setProps(data.props)
       return comp;
     })
     
-    this.updateDom()
+    this._updateDom()
   }
 
-  setProps = props => {
-    this._props = Observable({
-      target: props,
+  _introduceMembers = members => {
+    const observable = Observable({
+      target: members,
       listener: _ => {
-        this.updateDom()
+        this._updateDom()
       },
-      // listener: _ => { },
-      freeze: true
+      freeze: false
     })
 
-    for (let key in this._props) {
+    for (let key in observable) {
       Object.defineProperty(this, key, {
         get () {
-          return this._props[key]
+          return observable[key]
         },
         set (newVal) {
-          this._props[key] = newVal
+          observable[key] = newVal
         },
         configurable: true
       })
     }
+
+    return observable;
+  }
+
+  _setProps = props => {
+    this._props = this._introduceMembers(props);
   }
 }
