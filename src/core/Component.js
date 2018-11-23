@@ -11,24 +11,31 @@ export default class Component {
   }
 
   initializeChildComponent = comp => new Component(comp, patches => {
-    this.updateDom();
+    this.updateDom(true);
   }, this)
   
+  updateDom = partial => {
+    let tree = this._nodeTree;
 
-  updateDom = state => {
-    let tree = this._renderFnc((a, b, c) => {
+    tree = this._renderFnc((a, b, c) => {
       if (typeof a === 'string') {
         return h(a, b, c)
       } else if (typeof a === 'object') {
         const hash = stringHash(JSON.stringify(a))
         const cmp = this._components.find(c => c._hash === hash)
-
+        
         if (cmp) {
+          if (!partial) {
+            for (let key in b.props) {
+              cmp._props[key] = b.props[key]
+            }
+          }
+
           return cmp._nodeTree
         }
       }
     });
-
+    
     const patches = diff(this._nodeTree, tree);
     this._nodeTree = tree;
     this.$el = create(this._nodeTree);
@@ -45,17 +52,16 @@ export default class Component {
     if (component.state) {
       this._state = Observable({
         target: component.state(),
-        listener: this.updateDom,
+        listener: _ => {
+          this.updateDom();
+        },
         freeze: false
       });
     }
 
-    this.stateReq = [];
-
     for (let key in this._state) {
       Object.defineProperty(this, key, {
         get () {
-          this.stateReq.push(key)
           return this._state[key]
         },
         set (newVal) {
@@ -65,7 +71,7 @@ export default class Component {
       })
     }
     
-    this._props = component.props && this.setProps(component.props)
+    // this._props = component.props && this.setProps(component.props)
 
     if (component.init) {
       component.init.apply(this)
@@ -73,7 +79,6 @@ export default class Component {
 
     this._components = [];
     this._renderFnc = component.render;
-    this.stateReq = [];
 
     const componentsToInit = []
 
@@ -89,14 +94,7 @@ export default class Component {
     
     this._components = componentsToInit.map(data => {
       const comp = this.initializeChildComponent(data.component);
-
-      for (let key in data.props) {
-        // console.log(comp._props[key], ' = ', data.props[key])
-        // if (comp._props.hasOwnProperty(key)) {
-        // comp._props[key] = data.props[key]
-        // }
-      }
-
+      comp.setProps(data.props)
       return comp;
     })
     
@@ -104,24 +102,25 @@ export default class Component {
   }
 
   setProps = props => {
-    let observable = Observable({
+    this._props = Observable({
       target: props,
-      listener: this.updateDom,
+      listener: _ => {
+        this.updateDom()
+      },
+      // listener: _ => { },
       freeze: true
     })
 
-    for (let key in observable) {
+    for (let key in this._props) {
       Object.defineProperty(this, key, {
         get () {
-          return observable[key]
+          return this._props[key]
         },
         set (newVal) {
-          observable[key] = newVal
+          this._props[key] = newVal
         },
         configurable: true
       })
     }
-
-    return observable;
   }
 }

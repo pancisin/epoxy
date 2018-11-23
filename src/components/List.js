@@ -46,7 +46,7 @@ export default {
       input,
       buttom,
       list,
-      // String(this.count),
+      String(this.count),
       String(this.elements.length) + ' items'
     ])
   }
