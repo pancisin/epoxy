@@ -1,3 +1,4 @@
+import ListItem from './ListItem';
 export default {
   name: 'list',
   state () {
@@ -10,7 +11,12 @@ export default {
     }
   },
   props: {
-    // elements: []
+    count: 5
+  },
+  init () {
+    // setInterval(_ => {
+    //   this.count += 5;
+    // }, 500)
   },
   render (h) {
     const input = h('input.form-control', {
@@ -34,12 +40,14 @@ export default {
       style: {
         'margin-top': '10px'
       }
-    }, this.elements.map(e => h('li', {}, e)))
+    }, this.elements.map(e => h(ListItem, { props: { content: e }})))
 
     return h('div', {}, [ 
       input,
       buttom,
-      list
+      list,
+      // String(this.count),
+      String(this.elements.length) + ' items'
     ])
   }
 }

@@ -1,8 +1,7 @@
 {
-    "name": "vdomproxies",
-    "version": "1.0.0",
+    "name": "epoxyjs",
+    "version": "0.0.1",
     "description": "",
-    "main": "index.js",
     "scripts": {
         "serve": "webpack-dev-server",
         "build": "webpack ./src/build.js --env prod",

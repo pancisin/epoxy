@@ -6,13 +6,13 @@ Write some about information here placeholder.
 ## Installation
 
 ``` bash
-npm install --save epoxyjs
+npm install --save pancisin/epoxy
 ```
 
 ## Getting started
 
 ``` js
-import { Epoxy } from 'epoxyjs';
+import { Epoxy } from 'epoxyjs/dist/epoxy';
 
 new Epoxy({
   state () {

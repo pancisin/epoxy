@@ -13,7 +13,11 @@ export default {
   },
   render (h) {
     const header = h('h1.text-muted', {}, ['Ahoj svet !'])
-    const list = h(List, {}, [])
+    const list = h(List, {
+      props: {
+        count: this.count
+      }
+    }, [])
     const container = h('div.container', {}, [ 
       header, 
       String(this.count), 
