@@ -1,4 +1,4 @@
-import Epoxy from './Application';
+import Epoxy from './Epoxy';
 import Component from './Component';
 
 export {

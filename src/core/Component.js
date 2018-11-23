@@ -2,7 +2,7 @@ import { patch, create, diff } from "virtual-dom";
 import { h } from 'virtual-dom';
 import { stringHash } from './utils';
 
-import Observable from './Observable';
+import observable from './observable';
 
 export default class Component {
 
@@ -82,7 +82,7 @@ export default class Component {
   }
 
   _introduceMembers = members => {
-    const observable = Observable({
+    const ob = observable({
       target: members,
       listener: _ => {
         this._updateDom()
@@ -90,19 +90,19 @@ export default class Component {
       freeze: false
     })
 
-    for (let key in observable) {
+    for (let key in ob) {
       Object.defineProperty(this, key, {
         get () {
-          return observable[key]
+          return ob[key]
         },
         set (newVal) {
-          observable[key] = newVal
+          ob[key] = newVal
         },
         configurable: true
       })
     }
 
-    return observable;
+    return ob;
   }
 
   _setProps = props => {

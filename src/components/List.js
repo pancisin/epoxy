@@ -13,11 +13,6 @@ export default {
   props: {
     count: 5
   },
-  init () {
-    // setInterval(_ => {
-    //   this.count += 5;
-    // }, 500)
-  },
   render (h) {
     const input = h('input.form-control', {
       placeholder: 'Insert Todo Here...',
