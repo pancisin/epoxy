@@ -41,6 +41,34 @@ export default class Component {
     this.$el = create(this._nodeTree);
     this._renderCallback(patches);
   }
+  
+  _introduceMembers = members => {
+    const ob = observable({
+      target: members,
+      listener: _ => {
+        this._updateDom()
+      },
+      freeze: false
+    })
+
+    for (let key in ob) {
+      Object.defineProperty(this, key, {
+        get () {
+          return ob[key]
+        },
+        set (newVal) {
+          ob[key] = newVal
+        },
+        configurable: true
+      })
+    }
+
+    return ob;
+  }
+
+  _setProps = props => {
+    this._props = this._introduceMembers(props);
+  }
 
   constructor (component, renderCallback, parent) {
     this.name = component.name;
@@ -79,33 +107,5 @@ export default class Component {
     })
     
     this._updateDom()
-  }
-
-  _introduceMembers = members => {
-    const ob = observable({
-      target: members,
-      listener: _ => {
-        this._updateDom()
-      },
-      freeze: false
-    })
-
-    for (let key in ob) {
-      Object.defineProperty(this, key, {
-        get () {
-          return ob[key]
-        },
-        set (newVal) {
-          ob[key] = newVal
-        },
-        configurable: true
-      })
-    }
-
-    return ob;
-  }
-
-  _setProps = props => {
-    this._props = this._introduceMembers(props);
   }
 }
